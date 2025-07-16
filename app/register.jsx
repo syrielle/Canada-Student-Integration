@@ -1,20 +1,39 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    Alert,
+    Button,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { auth, db } from '../src/services/firebaseConfig';
 
 export default function Register() {
   const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
+  const [confirmMotDePasse, setConfirmMotDePasse] = useState('');
   const [role, setRole] = useState('étudiant');
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleRegister = async () => {
-    if (!nom || !email || !motDePasse) {
+    if (!nom || !prenom || !email || !motDePasse || !confirmMotDePasse) {
       Alert.alert('Erreur', 'Tous les champs sont obligatoires.');
+      return;
+    }
+
+    if (motDePasse !== confirmMotDePasse) {
+      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas.');
       return;
     }
 
@@ -23,14 +42,18 @@ export default function Register() {
       const user = userCredential.user;
 
       await setDoc(doc(db, 'utilisateurs', user.uid), {
-        nom: nom,
-        email: email,
-        role: role,
-        estValide: role === 'mentor' ? false : true
-      });
+  nom,
+  prenom,
+  email,
+  role,
+  estValide: role === 'mentor' ? false : true,
+  profilComplet: false,
+  isAdmin: false,
+  isSuperAdmin: false
+});
 
       Alert.alert('Succès', 'Compte créé avec succès !');
-      router.push('/'); // Redirige vers l'accueil ou une autre page
+      router.push('/');
 
     } catch (error) {
       console.error(error);
@@ -51,6 +74,13 @@ export default function Register() {
 
       <TextInput
         style={styles.input}
+        placeholder="Prénom"
+        value={prenom}
+        onChangeText={setPrenom}
+      />
+
+      <TextInput
+        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
@@ -58,31 +88,59 @@ export default function Register() {
         autoCapitalize="none"
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={motDePasse}
-        onChangeText={setMotDePasse}
-        secureTextEntry
-      />
+<View style={styles.passwordContainer}>
+  <TextInput
+    style={styles.passwordInput}
+    placeholder="Mot de passe"
+    value={motDePasse}
+    onChangeText={setMotDePasse}
+    secureTextEntry={!showPassword}
+  />
+  <TouchableOpacity
+    style={styles.icon}
+    onPress={() => setShowPassword(!showPassword)}
+  >
+    <Ionicons
+      name={showPassword ? 'eye' : 'eye-off'}
+      size={20}
+      color="gray"
+    />
+  </TouchableOpacity>
+</View>
+
+
+    <View style={styles.passwordContainer}>
+  <TextInput
+    style={styles.passwordInput}
+    placeholder="Confirmer le mot de passe"
+    value={confirmMotDePasse}
+    onChangeText={setConfirmMotDePasse}
+    secureTextEntry={!showConfirmPassword}
+  />
+  <TouchableOpacity
+    style={styles.icon}
+    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+  >
+    <Ionicons
+      name={showConfirmPassword ? 'eye' : 'eye-off'}
+      size={20}
+      color="gray"
+    />
+  </TouchableOpacity>
+</View>
+
 
       <Text style={styles.label}>Type de compte :</Text>
       <View style={styles.roleContainer}>
         <TouchableOpacity
-          style={[
-            styles.roleOption,
-            role === 'étudiant' && styles.selected
-          ]}
+          style={[styles.roleOption, role === 'étudiant' && styles.selected]}
           onPress={() => setRole('étudiant')}
         >
           <Text>Étudiant</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.roleOption,
-            role === 'mentor' && styles.selected
-          ]}
+          style={[styles.roleOption, role === 'mentor' && styles.selected]}
           onPress={() => setRole('mentor')}
         >
           <Text>Mentor</Text>
@@ -130,5 +188,23 @@ const styles = StyleSheet.create({
   },
   selected: {
     backgroundColor: '#cce5ff'
-  }
+  },
+  passwordContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: '#aaa',
+  borderRadius: 5,
+  paddingHorizontal: 10,
+  marginBottom: 15
+},
+icon: {
+  marginLeft: 'auto'
+},
+passwordInput: {
+  flex: 1,
+  paddingVertical: 10
+}
+
+
 });
