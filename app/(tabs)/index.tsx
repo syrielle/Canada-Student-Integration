@@ -6,6 +6,8 @@ export default function HomeScreen() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text style={{ fontSize: 24, marginBottom: 20 }}>Bienvenue 👋</Text>
 
+       
+      
       {/* Bouton pour créer un compte */}
       <Link href="/register" asChild>
         <Button title="Créer un compte" />
@@ -18,6 +20,7 @@ export default function HomeScreen() {
       <Link href="/login" asChild>
         <Button title="Se connecter" />
       </Link>
+      
     </View>
   );
 }

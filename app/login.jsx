@@ -1,12 +1,25 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { auth } from '../src/services/firebaseConfig';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { auth, db } from '../src/services/firebaseConfig';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -16,9 +29,42 @@ export default function Login() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, motDePasse);
-      Alert.alert('Connexion réussie');
-      router.push('/'); // Redirige vers accueil (ou vers une page selon le rôle plus tard)
+      const userCredential = await signInWithEmailAndPassword(auth, email, motDePasse);
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, 'utilisateurs', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        Alert.alert('Erreur', 'Profil utilisateur introuvable.');
+        return;
+      }
+
+      const userData = userDocSnap.data();
+
+      if (userData.isSuperAdmin) {
+        router.replace('/admin/dashboardSuperAdmin');
+      } else if (userData.isAdmin) {
+        router.replace('/admin/dashboardAdmin');
+      } else if (userData.role === 'mentor') {
+        if (!userData.estValide) {
+          Alert.alert('Compte en attente', 'Votre compte de mentor doit être validé par un administrateur.');
+          return;
+        }
+        if (!userData.profilComplet) {
+          router.replace('/completerProfil');
+          return;
+        }
+        router.replace('/mentor/dashboardMentor');
+      } else if (userData.role === 'étudiant') {
+        if (!userData.profilComplet) {
+          router.replace('/etudiant/completerProfilEtudiant');
+          return;
+        }
+        router.replace('/etudiant/dashboardEtudiant');
+      } else {
+        Alert.alert('Erreur', 'Rôle utilisateur non reconnu.');
+      }
     } catch (error) {
       console.error(error);
       if (error.code === 'auth/user-not-found') {
@@ -32,36 +78,59 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Connexion</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Connexion</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={motDePasse}
-        onChangeText={setMotDePasse}
-        secureTextEntry
-      />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Mot de passe"
+              value={motDePasse}
+              onChangeText={setMotDePasse}
+              secureTextEntry={!showPassword}
+            />
+            <Feather
+              name={showPassword ? 'eye' : 'eye-off'}
+              size={20}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          </View>
 
-      <Button title="Se connecter" onPress={handleLogin} />
-    </View>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Se connecter</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20
+  },
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5
   },
   title: {
     fontSize: 24,
@@ -75,5 +144,28 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
     borderRadius: 5
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#aaa',
+    borderRadius: 5,
+    paddingRight: 10,
+    marginBottom: 15
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 10
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 5,
+    alignItems: 'center'
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold'
   }
 });
