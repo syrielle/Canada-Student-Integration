@@ -61,7 +61,7 @@ export default function Login() {
           router.replace('/etudiant/completerProfilEtudiant');
           return;
         }
-        router.replace('/etudiant/dashboardEtudiant');
+        router.replace('/etudiant/procedureStream');
       } else {
         Alert.alert('Erreur', 'Rôle utilisateur non reconnu.');
       }

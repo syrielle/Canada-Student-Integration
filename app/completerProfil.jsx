@@ -11,8 +11,13 @@ import { auth, db } from '../src/services/firebaseConfig';
 export default function CompleterProfil() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [dateDeNaissance, setDateDeNaissance] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [estSurLeTerritoire, setEstSurLeTerritoire] = useState(false);
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState(null);
 
   useEffect(() => {
@@ -27,6 +32,10 @@ export default function CompleterProfil() {
         setRole(data.role || (data.isAdmin ? 'admin' : data.isSuperAdmin ? 'superAdmin' : null));
         setNom(data.nom || '');
         setPrenom(data.prenom || '');
+        setDateDeNaissance(data.dateDeNaissance || '');
+        setTelephone(data.telephone || '');
+        setEstSurLeTerritoire(data.estSurLeTerritoire || false);
+        setEmail(data.email || user.email);
       }
       setLoading(false);
     };
@@ -35,8 +44,8 @@ export default function CompleterProfil() {
   }, []);
 
   const handleSave = async () => {
-    if (!nom || !prenom) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+    if (!nom || !prenom || !dateDeNaissance || !telephone) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
@@ -47,7 +56,11 @@ export default function CompleterProfil() {
       await updateDoc(doc(db, 'utilisateurs', user.uid), {
         nom,
         prenom,
-        profilComplet: true
+        dateDeNaissance,
+        telephone,
+        estSurLeTerritoire,
+        profilComplet: true,
+        mentorID: role === 'étudiant' ? '' : null,
       });
 
       Alert.alert('Succès', 'Profil complété avec succès.');
@@ -81,45 +94,81 @@ export default function CompleterProfil() {
 
   return (
     <KeyboardAvoidingView
-  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-  style={{ flex: 1 }}
->
-  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <ScrollView contentContainerStyle={{
-  flexGrow: 1,
-  justifyContent: 'center',
-  padding: 20,
-}}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Compléter votre profil</Text>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Compléter votre profil</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Nom"
-          value={nom}
-          onChangeText={setNom}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prénom"
-          value={prenom}
-          onChangeText={setPrenom}
-        />
+            <TextInput
+              style={styles.input}
+              placeholder="Nom"
+              value={nom}
+              onChangeText={setNom}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Prénom"
+              value={prenom}
+              onChangeText={setPrenom}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Date de naissance (AAAA-MM-JJ)"
+              value={dateDeNaissance}
+              onChangeText={setDateDeNaissance}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Téléphone"
+              keyboardType="phone-pad"
+              value={telephone}
+              onChangeText={setTelephone}
+            />
+            <TextInput
+              style={[styles.input, { backgroundColor: '#eee' }]}
+              value={email}
+              editable={false}
+              placeholder="Adresse e-mail"
+            />
 
-        <Button title="Enregistrer" onPress={handleSave} />
-      </View>
+            <View style={styles.radioGroup}>
+              <Text style={{ marginBottom: 10 }}>
+                Êtes-vous déjà sur le territoire (au Québec) ?
+              </Text>
+              <View style={styles.radioContainer}>
+                <Button
+                  title="Oui"
+                  onPress={() => setEstSurLeTerritoire(true)}
+                  color={estSurLeTerritoire ? '#4CAF50' : '#aaa'}
+                />
+                <Button
+                  title="Non"
+                  onPress={() => setEstSurLeTerritoire(false)}
+                  color={!estSurLeTerritoire ? '#F44336' : '#aaa'}
+                />
+              </View>
+            </View>
 
-    </ScrollView>
-  </TouchableWithoutFeedback>
-</KeyboardAvoidingView> 
+            <Button title="Enregistrer" onPress={handleSave} />
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20
   },
   center: {
     flex: 1,
@@ -138,5 +187,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 5
   },
-  
+  radioGroup: {
+    marginBottom: 20,
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  }
 });

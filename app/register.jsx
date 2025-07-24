@@ -4,15 +4,15 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { auth, db } from '../src/services/firebaseConfig';
 
@@ -42,16 +42,22 @@ export default function Register() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, motDePasse);
       const user = userCredential.user;
 
-      await setDoc(doc(db, 'utilisateurs', user.uid), {
-        nom,
-        prenom,
-        email,
-        role,
-        estValide: role === 'mentor' ? false : true,
-        profilComplet: false,
-        isAdmin: false,
-        isSuperAdmin: false
-      });
+     await setDoc(doc(db, 'utilisateurs', user.uid), {
+  nom,
+  prenom,
+  email,
+  role,
+  estValide: role === 'mentor' ? false : true,
+  estConfirme: role === 'mentor' ? false : true,
+  estSurLeTerritoire: null, // sera rempli plus tard dans le profil
+  etapesCompletes: [],
+  mentorID: '',
+  profilComplet: false,
+  preuveMentorat: '', // ← ce champ est vide au départ, à remplir plus tard
+  isAdmin: false,
+  isSuperAdmin: false
+});
+
 
       Alert.alert('Succès', 'Compte créé avec succès !');
       router.push('/');

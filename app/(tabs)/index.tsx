@@ -1,5 +1,7 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Button, Text, View } from 'react-native';
+
+const router = useRouter();
 
 export default function HomeScreen() {
   return (
@@ -20,7 +22,8 @@ export default function HomeScreen() {
       <Link href="/login" asChild>
         <Button title="Se connecter" />
       </Link>
-      
+
+       
     </View>
   );
 }

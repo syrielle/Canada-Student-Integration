@@ -1,126 +1,210 @@
-import { Picker } from '@react-native-picker/picker';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useState } from 'react';
-import { Alert, Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator, Alert, Button, Keyboard, KeyboardAvoidingView,
+  Platform,
+  ScrollView, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View
+} from 'react-native';
+//import { auth, db } from '../src/services/firebaseConfig';
 import { auth, db } from '../../src/services/firebaseConfig';
 
-export default function completerProfilEtudiant() {
+
+export default function CompleterProfil() {
   const router = useRouter();
-  const user = auth.currentUser;
+  const [loading, setLoading] = useState(true);
+  const [dateNaissance, setDateNaissance] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [nomComplet, setNomComplet] = useState('');
-  const [pays, setPays] = useState('');
-  const [typeEtudiant, setTypeEtudiant] = useState('');
-  const [objectifVoyage, setObjectifVoyage] = useState('');
-  const [programme, setProgramme] = useState('');
-  const [ecole, setEcole] = useState('');
-  const [image, setImage] = useState(null);
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [dateDeNaissance, setDateDeNaissance] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [estSurLeTerritoire, setEstSurLeTerritoire] = useState(false);
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState(null);
 
-  const choisirImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert('Permission requise', 'Autorisez l’accès à la galerie.');
-      return;
-    }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync();
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
+      const docRef = doc(db, 'utilisateurs', user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setRole(data.role || (data.isAdmin ? 'admin' : data.isSuperAdmin ? 'superAdmin' : null));
+        setNom(data.nom || '');
+        setPrenom(data.prenom || '');
+        setDateDeNaissance(data.dateDeNaissance || '');
+        setTelephone(data.telephone || '');
+        setEstSurLeTerritoire(data.estSurLeTerritoire || false);
+        setEmail(data.email || user.email);
+      }
+      setLoading(false);
+    };
 
-  const handleSubmit = async () => {
-    if (!nomComplet || !pays || !typeEtudiant || !objectifVoyage || !programme) {
+    fetchUser();
+  }, []);
+
+  const handleSave = async () => {
+    if (!nom || !prenom || !dateDeNaissance || !telephone) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
+    const user = auth.currentUser;
+    if (!user) return;
+
     try {
-      const userRef = doc(db, 'utilisateurs', user.uid);
-      await updateDoc(userRef, {
-        nomComplet,
-        pays,
-        typeEtudiant,
-        objectifVoyage,
-        programme,
-        ecole,
-        imageProfil: image || '',
-        profilComplet: true
+      await updateDoc(doc(db, 'utilisateurs', user.uid), {
+        nom,
+        prenom,
+        dateDeNaissance,
+        telephone,
+        estSurLeTerritoire,
+        profilComplet: true,
+        mentorID: role === 'étudiant' ? '' : null,
       });
 
-      router.replace('/etudiant/dashboardEtudiant');
+      Alert.alert('Profil complété',
+      'Votre profil a été complété avec succès.',
+      [
+        {
+         text: "Continuer",
+      onPress: () => router.push('/etudiant/procedure'), // vers ta page d’étapes
+        },
+      ]);
+
+      // Redirection selon le rôle
+      if (role === 'étudiant') {
+        router.replace('/etudiant/dashboardEtudiant');
+      } else if (role === 'mentor') {
+        router.replace('/mentor/dashboardMentor');
+      } else if (role === 'admin') {
+        router.replace('/admin/dashboardAdmin');
+      } else if (role === 'superAdmin') {
+        router.replace('/admin/dashboardSuperAdmin');
+      } else {
+        router.replace('/');
+      }
+
     } catch (error) {
-      Alert.alert('Erreur', 'Échec lors de la sauvegarde du profil.');
       console.error(error);
+      Alert.alert('Erreur', "Une erreur est survenue lors de l'enregistrement.");
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Compléter votre profil</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Compléter votre profil</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Nom complet"
-        value={nomComplet}
-        onChangeText={setNomComplet}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Pays d’origine"
-        value={pays}
-        onChangeText={setPays}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Objectif du voyage"
-        value={objectifVoyage}
-        onChangeText={setObjectifVoyage}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Programme d’études visé"
-        value={programme}
-        onChangeText={setProgramme}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Établissement visé (optionnel)"
-        value={ecole}
-        onChangeText={setEcole}
-      />
+            <TextInput
+              style={styles.input}
+              placeholder="Nom"
+              value={nom}
+              onChangeText={setNom}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Prénom"
+              value={prenom}
+              onChangeText={setPrenom}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Date de naissance (AAAA-MM-JJ)"
+              value={dateDeNaissance}
+              onChangeText={setDateDeNaissance}
+            />
+            
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Téléphone"
+              keyboardType="phone-pad"
+              value={telephone}
+              onChangeText={setTelephone}
+            />
+            <TextInput
+              style={[styles.input, { backgroundColor: '#eee' }]}
+              value={email}
+              editable={false}
+              placeholder="Adresse e-mail"
+            />
 
-      <Text style={styles.label}>Type d’étudiant :</Text>
-      <Picker
-        selectedValue={typeEtudiant}
-        onValueChange={(itemValue) => setTypeEtudiant(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Sélectionnez..." value="" />
-        <Picker.Item label="Déjà au Québec" value="au_quebec" />
-        <Picker.Item label="À l’étranger" value="a_etranger" />
-      </Picker>
+            <View style={styles.radioGroup}>
+              <Text style={{ marginBottom: 10 }}>
+                Êtes-vous déjà sur le territoire (au Québec) ?
+              </Text>
+              <View style={styles.radioContainer}>
+                <Button
+                  title="Oui"
+                  onPress={() => setEstSurLeTerritoire(true)}
+                  color={estSurLeTerritoire ? '#4CAF50' : '#aaa'}
+                />
+                <Button
+                  title="Non"
+                  onPress={() => setEstSurLeTerritoire(false)}
+                  color={!estSurLeTerritoire ? '#F44336' : '#aaa'}
+                />
+              </View>
+            </View>
 
-      <TouchableOpacity onPress={choisirImage} style={styles.imageButton}>
-        <Text style={styles.imageButtonText}>Choisir une photo (facultatif)</Text>
-      </TouchableOpacity>
-
-      {image && <Image source={{ uri: image }} style={styles.image} />}
-
-      <Button title="Enregistrer" onPress={handleSubmit} />
-    </View>
+            <Button title="Enregistrer" onPress={handleSave} />
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 15, borderRadius: 5 },
-  label: { fontWeight: 'bold', marginBottom: 5 },
-  picker: { borderWidth: 1, borderColor: '#ccc', marginBottom: 20 },
-  imageButton: { backgroundColor: '#007bff', padding: 10, marginBottom: 10, borderRadius: 5 },
-  imageButtonText: { color: 'white', textAlign: 'center' },
-  image: { width: 100, height: 100, alignSelf: 'center', borderRadius: 50, marginBottom: 15 }
+  scroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    alignSelf: 'center'
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#aaa',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 5
+  },
+  radioGroup: {
+    marginBottom: 20,
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  }
 });

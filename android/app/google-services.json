@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "691452627832",
+    "project_id": "canada-student-integration",
+    "storage_bucket": "canada-student-integration.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691452627832:android:bc8df86e79627fc747168d",
+        "android_client_info": {
+          "package_name": "com.sirielle.canadastudentintegration"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "691452627832-kbt27bnvb4sqrp4cjl2nurldvhh06ari.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sirielle.canadastudentintegration",
+            "certificate_hash": "c0982351b009bea9abd7347776e6f1a6cfb90fec"
+          }
+        },
+        {
+          "client_id": "691452627832-0g2uv7s717stqpu8nqsu5644dd08ukso.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASQ03NQsckG00Puo9gE7guBGXtoWMG0mQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "691452627832-0g2uv7s717stqpu8nqsu5644dd08ukso.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
