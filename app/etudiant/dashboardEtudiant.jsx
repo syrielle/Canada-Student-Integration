@@ -1,9 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import ProcedureScreen from './ProcedureScreen';
 
 export default function DashboardEtudiant() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue sur le tableau de bord Étudiant</Text>
+      <ProcedureScreen />
     </View>
   );
 }
@@ -11,11 +12,6 @@ export default function DashboardEtudiant() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold'
-  }
 });

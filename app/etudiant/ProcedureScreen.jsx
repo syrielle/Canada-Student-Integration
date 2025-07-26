@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { getAuth } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, orderBy, query, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { db } from '../../src/services/firebaseConfig';
@@ -14,8 +14,8 @@ export default function ProcedureScreen() {
   // Récupère les étapes valides
   const recupererEtapes = async () => {
     const q = query(
-      collection(db, 'etapes'),
-      where('estValide', '==', true),
+      collection(db, 'procedureSteps'),
+     // where('estValide', '==', false),
       orderBy('numeroEtape', 'asc')
     );
 
@@ -24,6 +24,10 @@ export default function ProcedureScreen() {
       id: doc.id,
       ...doc.data()
     }));
+    console.log("Contenu brut récupéré :", querySnapshot.docs.map(doc => doc.data()));
+
+    console.log('Étapes récupérées :', etapesData); // ← Ajoute ceci
+
 
     setEtapes(etapesData);
   };
@@ -85,6 +89,11 @@ export default function ProcedureScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.titre}>Suivi de votre parcours</Text>
+{etapes.length === 0 && (
+  <Text style={{ textAlign: 'center', color: 'gray' }}>
+    Aucune étape à afficher pour le moment.
+  </Text>
+)}
 
       <FlatList
         data={etapes}
