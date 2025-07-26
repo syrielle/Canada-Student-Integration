@@ -68,93 +68,98 @@ export default function Register() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Créer un compte</Text>
+    <View style={{ flex: 1 }}>
+      <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 40, left: 20, zIndex: 10 }}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Créer un compte</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Nom"
-            value={nom}
-            onChangeText={setNom}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Prénom"
-            value={prenom}
-            onChangeText={setPrenom}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.passwordInput}
-              placeholder="Mot de passe"
-              value={motDePasse}
-              onChangeText={setMotDePasse}
-              secureTextEntry={!showPassword}
+              style={styles.input}
+              placeholder="Nom"
+              value={nom}
+              onChangeText={setNom}
             />
-            <TouchableOpacity
-              style={styles.icon}
-              onPress={() => setShowPassword(!showPassword)}
-            >
-              <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color="gray" />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.passwordInput}
-              placeholder="Confirmer le mot de passe"
-              value={confirmMotDePasse}
-              onChangeText={setConfirmMotDePasse}
-              secureTextEntry={!showConfirmPassword}
+              style={styles.input}
+              placeholder="Prénom"
+              value={prenom}
+              onChangeText={setPrenom}
             />
-            <TouchableOpacity
-              style={styles.icon}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              <Ionicons name={showConfirmPassword ? 'eye' : 'eye-off'} size={20} color="gray" />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Mot de passe"
+                value={motDePasse}
+                onChangeText={setMotDePasse}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                style={styles.icon}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Confirmer le mot de passe"
+                value={confirmMotDePasse}
+                onChangeText={setConfirmMotDePasse}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity
+                style={styles.icon}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Ionicons name={showConfirmPassword ? 'eye' : 'eye-off'} size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.label}>Type de compte :</Text>
+            <View style={styles.roleContainer}>
+              <TouchableOpacity
+                style={[styles.roleOption, role === 'étudiant' && styles.selected]}
+                onPress={() => setRole('étudiant')}
+              >
+                <Text>Étudiant</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.roleOption, role === 'mentor' && styles.selected]}
+                onPress={() => setRole('mentor')}
+              >
+                <Text>Mentor</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+              <Text style={styles.buttonText}>S'inscrire</Text>
             </TouchableOpacity>
           </View>
-
-          <Text style={styles.label}>Type de compte :</Text>
-          <View style={styles.roleContainer}>
-            <TouchableOpacity
-              style={[styles.roleOption, role === 'étudiant' && styles.selected]}
-              onPress={() => setRole('étudiant')}
-            >
-              <Text>Étudiant</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.roleOption, role === 'mentor' && styles.selected]}
-              onPress={() => setRole('mentor')}
-            >
-              <Text>Mentor</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>S'inscrire</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

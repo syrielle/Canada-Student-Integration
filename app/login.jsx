@@ -1,8 +1,9 @@
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
+
 import {
   Alert,
   KeyboardAvoidingView,
@@ -10,9 +11,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
-  View
+  TextInput, TouchableOpacity, View
 } from 'react-native';
 import { auth, db } from '../src/services/firebaseConfig';
 
@@ -78,6 +77,11 @@ export default function Login() {
   };
 
   return (
+  <View style={{ flex: 1 }}>
+    <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 40, left: 20, zIndex: 10 }}>
+      <Ionicons name="arrow-back" size={24} color="black" />
+    </TouchableOpacity>
+
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
@@ -117,6 +121,9 @@ export default function Login() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+  </View>
+
+
   );
 }
 
