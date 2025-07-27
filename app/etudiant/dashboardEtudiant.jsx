@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import ProcedureScreen from './ProcedureScreen';
+import ProcedureScreen from '../mentor/ProcedureScreen';
 
 export default function DashboardEtudiant() {
   return (
@@ -15,3 +15,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 });
+
+

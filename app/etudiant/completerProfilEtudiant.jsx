@@ -72,7 +72,10 @@ export default function CompleterProfil() {
       [
         {
          text: "Continuer",
-      onPress: () => router.push('/etudiant/procedure'), // vers ta page d’étapes
+      // onPress: (){ 
+      //   //router.push('/etudiant/procedure');
+
+      // } // vers ta page d’étapes
         },
       ]);
 
