@@ -57,10 +57,10 @@ export default function Login() {
         router.replace('/mentor');
       } else if (userData.role === 'étudiant') {
         if (!userData.profilComplet) {
-          router.replace('/etudiant/completerProfilEtudiant');
+          router.replace('etudiant/completerProfilEtudiant');
           return;
         }
-        router.replace('/etudiant/dashboardEtudiant');
+        router.replace('/etudiant');
       } else {
         Alert.alert('Erreur', 'Rôle utilisateur non reconnu.');
       }

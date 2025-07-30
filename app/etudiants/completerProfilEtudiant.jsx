@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator, Alert, Button, Keyboard, KeyboardAvoidingView,
-    Platform,
-    ScrollView, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View
+  ActivityIndicator, Alert, Button, Keyboard, KeyboardAvoidingView,
+  Platform,
+  ScrollView, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View
 } from 'react-native';
 //import { auth, db } from '../src/services/firebaseConfig';
 import { auth, db } from '../../src/services/firebaseConfig';
