@@ -1,75 +1,106 @@
 import { Ionicons } from '@expo/vector-icons';
 import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { auth, db } from '../../src/services/firebaseConfig';
 
 export default function JumelageEtudiants() {
-const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
+  const [etudiants, setEtudiants] = useState<Etudiant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [demandesEnvoyees, setDemandesEnvoyees] = useState<string[]>([]);
+
   type Etudiant = {
-  id: string;
-  idEtudiant: string;
-  nom: string;
-  prenom: string;
-};
-const [demandesEnvoyees, setDemandesEnvoyees] = useState<string[]>([]);
+    id: string;
+    idEtudiant: string;
+    nom: string;
+    prenom: string;
+  };
 
-const liste: Etudiant[] = [];
-const idMentor = auth.currentUser?.uid;
+  const idMentor = auth.currentUser?.uid;
 
-if (!idMentor) {
-  Alert.alert("Erreur", "Mentor non authentifié");
-  return;
-}
-
+  if (!idMentor) {
+    Alert.alert("Erreur", "Mentor non authentifié");
+    return null;
+  }
 
   const fetchEtudiants = async () => {
     try {
-      const q = query(
+      setLoading(true);
+
+      // Étape 1 : récupérer tous les étudiants avec profil complété
+      const qEtudiants = query(
         collection(db, 'utilisateurs'),
         where('role', '==', 'étudiant'),
         where('profilComplet', '==', true)
       );
+      const querySnapshot = await getDocs(qEtudiants);
 
-      const querySnapshot = await getDocs(q);
-      
-
+      const allEtudiants: Etudiant[] = [];
       querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data() as Omit<Etudiant, "id">; // on suppose que Firestore contient nom et prenom
-        liste.push({ id: docSnap.id, ...data });
-     });
+        const data = docSnap.data() as Omit<Etudiant, 'id'>;
+        allEtudiants.push({ id: docSnap.id, ...data });
+      });
 
+      // Étape 2 : récupérer les demandes de jumelage faites par ce mentor
+      const qDemandes = query(
+        collection(db, 'demandesJumelage'),
+        where('idMentor', '==', idMentor)
+      );
+      const demandesSnap = await getDocs(qDemandes);
 
-      setEtudiants(liste);
-      setLoading(false);
+      const idsEtudiantsDemandeEnvoyee: string[] = [];
+      const idsEtudiantsValides: string[] = [];
+
+      demandesSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.statut === 'en_attente') {
+          idsEtudiantsDemandeEnvoyee.push(data.idEtudiant);
+        } else if (data.statut === 'valide') {
+          idsEtudiantsValides.push(data.idEtudiant);
+        }
+      });
+
+      // Étape 3 : filtrer les étudiants qui n'ont pas encore été jumelés
+      const etudiantsDisponibles = allEtudiants.filter(
+        (etudiant) => !idsEtudiantsValides.includes(etudiant.id)
+      );
+
+      setEtudiants(etudiantsDisponibles);
+      setDemandesEnvoyees(idsEtudiantsDemandeEnvoyee);
     } catch (error) {
-      console.error('Erreur de chargement des étudiants :', error);
+      console.error('Erreur de chargement :', error);
+      Alert.alert('Erreur', "Impossible de charger les étudiants.");
+    } finally {
       setLoading(false);
     }
   };
-const proposerJumelage = async (idEtudiant: string) => {
-  try {
-    const idMentor = auth.currentUser?.uid;
-    if (!idMentor) throw new Error("Mentor non authentifié");
 
-    await addDoc(collection(db, 'demandesJumelage'), {
-      idMentor,
-      idEtudiant,
-      statut: 'en_attente',
-      dateDemande: new Date(),
-    });
+  const proposerJumelage = async (idEtudiant: string) => {
+    try {
+      await addDoc(collection(db, 'demandesJumelage'), {
+        idMentor,
+        idEtudiant,
+        statut: 'en_attente',
+        dateDemande: new Date(),
+      });
 
-    // Marquer l’étudiant comme ayant reçu une demande
-    setDemandesEnvoyees((prev) => [...prev, idEtudiant]);
+      // Mettre à jour l’état local
+      setDemandesEnvoyees((prev) => [...prev, idEtudiant]);
 
-    Alert.alert('Demande envoyée', 'Votre demande de jumelage a été soumise à l’administrateur.');
-  } catch (error) {
-    console.error("Erreur lors de la demande de jumelage :", error);
-    Alert.alert('Erreur', "Impossible de proposer un jumelage.");
-  }
-};
-
+      Alert.alert('Demande envoyée', 'Votre demande de jumelage a été soumise à l’administrateur.');
+    } catch (error) {
+      console.error("Erreur lors de la demande :", error);
+      Alert.alert('Erreur', "Impossible de proposer un jumelage.");
+    }
+  };
 
   useEffect(() => {
     fetchEtudiants();
@@ -95,19 +126,20 @@ const proposerJumelage = async (idEtudiant: string) => {
           <View style={styles.card}>
             <Text style={styles.nom}>{item.prenom} {item.nom}</Text>
             <TouchableOpacity
-                style={[
-                  styles.bouton,
-                  demandesEnvoyees.includes(item.id) && { backgroundColor: 'gray' }
-                ]}
-                disabled={demandesEnvoyees.includes(item.id)}
-                onPress={() => proposerJumelage(item.id)}
-              >
-                <Ionicons name="person-add" size={20} color="white" />
-                <Text style={styles.boutonText}>
-                  {demandesEnvoyees.includes(item.id) ? "Demande de jumelage envoyée" : "Proposer un jumelage"}
-                </Text>
+              style={[
+                styles.bouton,
+                demandesEnvoyees.includes(item.id) && { backgroundColor: 'gray' },
+              ]}
+              disabled={demandesEnvoyees.includes(item.id)}
+              onPress={() => proposerJumelage(item.id)}
+            >
+              <Ionicons name="person-add" size={20} color="white" />
+              <Text style={styles.boutonText}>
+                {demandesEnvoyees.includes(item.id)
+                  ? 'Demande de jumelage envoyée'
+                  : 'Proposer un jumelage'}
+              </Text>
             </TouchableOpacity>
-
           </View>
         )}
         ListEmptyComponent={<Text>Aucun étudiant disponible pour l’instant.</Text>}
