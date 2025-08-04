@@ -5,10 +5,11 @@ export default function MentorTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#007bff',
         headerShown: false,
+        tabBarActiveTintColor: '#007bff',
       }}
     >
+      {/* Onglets visibles */}
       <Tabs.Screen
         name="index"
         options={{
@@ -18,8 +19,10 @@ export default function MentorTabsLayout() {
           ),
         }}
       />
+
+      {/* Dossier chat => on expose seulement chat/index comme onglet */}
       <Tabs.Screen
-        name="chat"
+        name="chat/index"
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, size }) => (
@@ -27,6 +30,7 @@ export default function MentorTabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="profil"
         options={{
@@ -36,6 +40,14 @@ export default function MentorTabsLayout() {
           ),
         }}
       />
+
+      {/* Écrans internes (pas d’icône dans la barre) */}
+      <Tabs.Screen name="chat/[idEtudiant]" options={{ href: null }} />
+      <Tabs.Screen name="parcours/[idEtudiant]" options={{ href: null }} />
+      <Tabs.Screen name="jumelageEtudiants" options={{ href: null }} />
+      <Tabs.Screen name="ProcedureScreen" options={{ href: null }} />
+      {/* Fichier de test vu dans l’arborescence */}
+      <Tabs.Screen name="chatssss" options={{ href: null }} />
     </Tabs>
   );
 }

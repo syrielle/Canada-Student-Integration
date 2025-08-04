@@ -6,21 +6,24 @@ import { Alert, Button, FlatList, StyleSheet, Text, View } from 'react-native';
 import { auth, db } from '../../../src/services/firebaseConfig';
 
 type Jumelage = {
-  id: string;
+  id: string;           // (facultatif dans Firestore, on ne s'y fie pas pour la key)
   idEtudiant: string;
   idMentor: string;
   statut: string;
+  firestoreId?: string; // on l’ajoute nous-même
+};
+
+type EtudiantEnrichi = Jumelage & {
+  nomEtudiant: string;
 };
 
 export default function ListeEtudiantsJumeles() {
-  const [etudiants, setEtudiants] = useState<any[]>([]);
+  const [etudiants, setEtudiants] = useState<EtudiantEnrichi[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        fetchEtudiants(user.uid);
-      }
+      if (user) fetchEtudiants(user.uid);
     });
     return () => unsubscribe();
   }, []);
@@ -28,20 +31,23 @@ export default function ListeEtudiantsJumeles() {
   const fetchEtudiants = async (mentorId: string) => {
     try {
       const snapshot = await getDocs(collection(db, 'demandesJumelage'));
-      const data = snapshot.docs
-        .map(doc => {
-          const d = doc.data() as Jumelage;
-          return { ...d, firestoreId: doc.id };
+      const data: Jumelage[] = snapshot.docs
+        .map((d) => {
+          const j = d.data() as Jumelage;
+          return { ...j, firestoreId: d.id }; // ✅ id unique Firestore
         })
-        .filter(j => j.idMentor === mentorId && j.statut === 'valide');
+        .filter((j) => j.idMentor === mentorId && j.statut === 'valide');
 
-      const enriched = await Promise.all(
+      const enriched: EtudiantEnrichi[] = await Promise.all(
         data.map(async (j) => {
           const etuSnap = await getDoc(doc(db, 'utilisateurs', j.idEtudiant));
-          const etuData = etuSnap.exists() ? etuSnap.data() : {};
+          const etuData: any = etuSnap.exists() ? etuSnap.data() : {};
           return {
             ...j,
-            nomEtudiant: etuData.prenom && etuData.nom ? `${etuData.prenom} ${etuData.nom}` : 'Inconnu',
+            nomEtudiant:
+              etuData?.prenom && etuData?.nom
+                ? `${etuData.prenom} ${etuData.nom}`
+                : 'Inconnu',
           };
         })
       );
@@ -72,11 +78,7 @@ export default function ListeEtudiantsJumeles() {
       `Mettre fin au jumelage avec ${nom} ?`,
       [
         { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Confirmer',
-          style: 'destructive',
-          onPress: () => mettreFinJumelage(id),
-        },
+        { text: 'Confirmer', style: 'destructive', onPress: () => mettreFinJumelage(id) },
       ]
     );
   };
@@ -84,7 +86,7 @@ export default function ListeEtudiantsJumeles() {
   const mettreFinJumelage = async (id: string) => {
     try {
       await updateDoc(doc(db, 'demandesJumelage', id), { statut: 'terminé' });
-      setEtudiants(prev => prev.filter(e => e.id !== id));
+      setEtudiants((prev) => prev.filter((e) => e.firestoreId !== id));
     } catch (error) {
       console.error('Erreur fin jumelage :', error);
     }
@@ -94,24 +96,28 @@ export default function ListeEtudiantsJumeles() {
     <View style={styles.container}>
       <Text style={styles.title}>Mes étudiants jumelés</Text>
 
-      {etudiants.length === 0 ? (
-        <Text style={styles.emptyText}>Aucun jumelage actif pour le moment.</Text>
-      ) : (
-        <FlatList
-          data={etudiants}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.nom}>{item.nomEtudiant}</Text>
-              <View style={styles.actions}>
-                <Button title="💬 Chat" onPress={() => ouvrirChat(item.idEtudiant)} />
-                <Button title="📄 Parcours" onPress={() => voirParcours(item.idEtudiant)} />
-                <Button title="❌ Fin" color="red" onPress={() => confirmerFinJumelage(item.id, item.nomEtudiant)} />
-              </View>
+      <FlatList
+        data={etudiants}
+        ListEmptyComponent={<Text style={styles.emptyText}>Aucun jumelage actif pour le moment.</Text>}
+        // ✅ clé unique et stable
+        keyExtractor={(item) =>
+          item.firestoreId ?? `${item.idMentor}-${item.idEtudiant}`
+        }
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.nom}>{item.nomEtudiant}</Text>
+            <View style={styles.actions}>
+              <Button title="💬 Chat" onPress={() => ouvrirChat(item.idEtudiant)} />
+              <Button title="📄 Parcours" onPress={() => voirParcours(item.idEtudiant)} />
+              <Button
+                title="❌ Fin"
+                color="red"
+                onPress={() => confirmerFinJumelage(item.firestoreId ?? '', item.nomEtudiant)}
+              />
             </View>
-          )}
-        />
-      )}
+          </View>
+        )}
+      />
     </View>
   );
 }
@@ -126,12 +132,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
   },
-  nom: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  actions: {
-    gap: 10,
-  },
+  nom: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
+  actions: { gap: 10 },
 });
