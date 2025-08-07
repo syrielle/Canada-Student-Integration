@@ -1,15 +1,16 @@
 import { useLocalSearchParams } from 'expo-router';
 import {
-    addDoc,
-    collection,
-    onSnapshot,
-    orderBy,
-    query,
-    serverTimestamp,
+  addDoc,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth, db } from '../../../../src/services/firebaseConfig';
+import { auth, db } from '../../../../src/services/firebaseConfig.js';
+
 
 // On utilise firestoreId pour l'id Firestore du message (évite le conflit "id" en double)
 type Msg = {
@@ -79,7 +80,7 @@ export default function ChatEtudiant() {
     } catch (e: any) {
       console.log('addDoc error:', e?.code, e?.message);
       Alert.alert('Envoi impossible', e?.message ?? 'Erreur inconnue');
-    }
+    } 
   };
 
   return (

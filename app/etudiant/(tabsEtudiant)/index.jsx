@@ -80,7 +80,7 @@ export default function MesEtudiants() {
               onPress={() => setEtapeSelectionnee(item)}
               style={[styles.etape, estComplete && styles.etapeGrisee]}
             >
-              <Text style={styles.numero}>{item.numeroEtape}</Text>
+              <Text style={styles.numero}>{item.titre}</Text>
               <Text style={styles.texte}>{item.descriptionEtape}</Text>
             </TouchableOpacity>
           );
