@@ -13,23 +13,24 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { auth, db } from '../../../../src/services/firebaseConfig.js';
+import { db } from '../../../../src/services/firebaseConfig.js';
 
 export default function ModifierEtape() {
   const router = useRouter();
-  const { id } = useLocalSearchParams(); // id du document procedureSteps
+  const { id } = useLocalSearchParams(); // /modifier/[id]
   const docId = useMemo(() => (Array.isArray(id) ? id[0] : id), [id]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Champs Firestore existants
+  // Champs Firestore
   const [titre, setTitre] = useState('');
   const [descriptionEtape, setDescriptionEtape] = useState('');
-  const [listeUtiles, setListeUtiles] = useState([]); // [{titre, url}]
-  const [numeroEtape, setNumeroEtape] = useState(null); // optionnel (affiché)
-  const [isValide, setIsValide] = useState(true); // optionnel (switch)
+  const [listeUtiles, setListeUtiles] = useState([]);     // [{ titre, url }]
+  const [numeroEtape, setNumeroEtape] = useState(null);   // number | null
+  const [isValide, setIsValide] = useState(true);         // boolean
 
+  // Charger l’étape
   useEffect(() => {
     const load = async () => {
       if (!docId) {
@@ -46,8 +47,8 @@ export default function ModifierEtape() {
           return;
         }
         const data = snap.data() || {};
-        setTitre(data.titre || '');
-        setDescriptionEtape(data.descriptionEtape || '');
+        setTitre(data.titre ?? '');
+        setDescriptionEtape(data.descriptionEtape ?? '');
         setListeUtiles(Array.isArray(data.listeUtiles) ? data.listeUtiles : []);
         setNumeroEtape(typeof data.numeroEtape === 'number' ? data.numeroEtape : null);
         setIsValide(typeof data.isValide === 'boolean' ? data.isValide : true);
@@ -62,6 +63,7 @@ export default function ModifierEtape() {
     load();
   }, [docId, router]);
 
+  // Helpers liens utiles
   const onChangeLien = (index, key, value) => {
     setListeUtiles(prev => {
       const copy = [...prev];
@@ -69,15 +71,10 @@ export default function ModifierEtape() {
       return copy;
     });
   };
+  const addLien = () => setListeUtiles(prev => [...prev, { titre: '', url: '' }]);
+  const removeLien = (index) => setListeUtiles(prev => prev.filter((_, i) => i !== index));
 
-  const addLien = () => {
-    setListeUtiles(prev => [...prev, { titre: '', url: '' }]);
-  };
-
-  const removeLien = (index) => {
-    setListeUtiles(prev => prev.filter((_, i) => i !== index));
-  };
-
+  // Sauvegarde
   const save = async () => {
     if (!titre.trim()) {
       Alert.alert('Validation', 'Le champ "Titre" est obligatoire.');
@@ -88,27 +85,28 @@ export default function ModifierEtape() {
       return;
     }
 
-    // Nettoyage simple des liens vides
+    // Nettoyage des liens vides
     const liensPropres = (listeUtiles || []).filter(
       l => (l?.titre?.trim()?.length || 0) > 0 && (l?.url?.trim()?.length || 0) > 0
     );
-console.log('uid=', auth.currentUser?.uid);
 
     setSaving(true);
     try {
       const ref = doc(db, 'procedureSteps', String(docId));
-      await updateDoc(doc(db, 'procedureSteps', idEtape), {
-  descriptionEtape: `Test ${Date.now()}`
-});
-      // await updateDoc(ref, {
-      //   titre: titre.trim(),
-      //   descriptionEtape: descriptionEtape.trim(),
-      //   listeUtiles: liensPropres,
-      //   ...(numeroEtape !== null ? { numeroEtape } : {}),
-      //   isValide,
-      // });
+
+      // Construire le payload conforme aux règles
+      const payload = {
+        titre: titre.trim(),
+        descriptionEtape: descriptionEtape.trim(),
+        listeUtiles: liensPropres,
+        ...(Number.isFinite(numeroEtape) ? { numeroEtape } : {}),
+        isValide,
+      };
+
+      await updateDoc(ref, payload);
+
       Alert.alert('Succès', 'Étape mise à jour.');
-      router.back(); // retour à la liste admin/parcours
+      router.back();
     } catch (e) {
       console.error('Save step error:', e);
       Alert.alert('Erreur', "Impossible d'enregistrer les modifications.");
@@ -128,7 +126,7 @@ console.log('uid=', auth.currentUser?.uid);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header actions */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
           <Text style={styles.headerBtnText}>← Retour</Text>
