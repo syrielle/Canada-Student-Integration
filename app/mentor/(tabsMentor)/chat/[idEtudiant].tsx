@@ -85,10 +85,7 @@ export default function ChatEtudiant() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Debug visible : retire cette ligne quand tout marche */}
-      {/* <Text style={{ color: 'grey', marginBottom: 8 }}>
-        demandeId: {String(demandeId || '')}
-      </Text> */}
+
 
       <FlatList
         data={msgs}
