@@ -54,7 +54,7 @@ export default function Login() {
           router.replace('/completerProfil');
           return;
         }
-        router.replace('/mentor');
+        router.replace('/mentor/');
       } else if (userData.role === 'étudiant') {
         if (!userData.profilComplet) {
           router.replace('etudiant/completerProfilEtudiant');

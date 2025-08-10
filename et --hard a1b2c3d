@@ -1,0 +1,23 @@
+[33m9474f21[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m)[m Ajout de la fleche de retour a la liste de discussion
+[33mdbbc52a[m Ajout du bouton de deconnexion
+[33m82bf23e[m Mise en forme complete de la section etudiant
+[33mdb8ac12[m Mise en forme du parcours de l'etudiant
+[33ma2d5880[m Mise en forme des 4 premieres pages de notre application
+[33mc853769[m[33m ([m[1;31morigin/develop[m[33m)[m Fix update step admin – correction règles Firestore et mise à jour code mise a jour du parcours depuis page admin fonctionnel
+[33m59f31e3[m ajout du formulaire pour modifier ou mettre a jours les etapes du parcours de l'etudiant
+[33mc385ed3[m ajout des liens vers le jumelage et la validation des mentor du cote admin
+[33ma57cb13[m Chat: flux mentor↔étudiant OK, règles Firestore mises à jour, nettoyage UI (hide demandeId)
+[33m3da40ef[m Correction des warnings de clé unique dans FlatList + nettoyage code affichage étudiants jumelés et conversations affichage normal des interfaces et icones
+[33m365c32e[m Mise en place de la base du chat mentor avec navigation, corrections à poursuivre
+[33mb725b4e[m ✨ Affichage des étudiants avec profil complété + bouton de jumelage fonctionnel et désactivable
+[33m32348c3[m  Connexion étudiant corrigée, redirection vers les onglets après complétion du profil. Ajout de la page de modification de profil étudiant. Préparation du chat mentor avec bouton flottant vers la page de jumelage.
+[33md2c9495[m ✅ Finalisation de la redirection mentor et structure de navigation de base
+[33m7b31816[m mise a jour de la tabbar
+[33m3605809[m Ajout des icones de retour sur la page de connexion et de creation de compte
+[33m20a16f1[m Initial commit
+[33mdfc8fe6[m Ajout de la modale de détails d’étapes avec description et liens utiles
+[33mb30b1da[m Mise à jour :formulaire de completion de profil fait et redirection vers la page procedureStream après connexion en cours
+[33m0a3bae8[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m Ajout des écrans Login et Register avec navigation et correctifs visuels
+[33m99da784[m Ajout de l'inscription avec rôles, affichage des mots de passe et champs pour validation/admin/superAdmin
+[33mc800a76[m Ajout des écrans login et register, mise à jour de index.tsx et des dépendances
+[33mf9aa536[m Initial commit

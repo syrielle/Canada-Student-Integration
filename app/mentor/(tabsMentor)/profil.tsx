@@ -1,4 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -11,6 +13,7 @@ export default function ProfilMentor() {
   const [telephone, setTelephone] = useState('');
   const [dateNaissance, setDateNaissance] = useState('');
   const [surPlace, setSurPlace] = useState('oui'); // ou 'non'
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const chargerProfil = async () => {
@@ -30,6 +33,16 @@ export default function ProfilMentor() {
 
     chargerProfil();
   }, []);
+   const doSignOut = async () => {
+     try {
+       setLoading(true);
+       await signOut(auth);
+       router.replace('/');
+     } catch (error) {
+       console.error('Erreur lors de la déconnexion', error);
+       setLoading(false);
+     }
+   };
 
   const handleSauvegarde = async () => {
     const user = auth.currentUser;
@@ -72,6 +85,11 @@ export default function ProfilMentor() {
      
       <TouchableOpacity style={styles.button} onPress={handleSauvegarde}>
         <Text style={styles.buttonText}>Enregistrer</Text>
+      </TouchableOpacity>
+      {/* Bouton Déconnexion */}
+      <TouchableOpacity style={styles.logoutButton} onPress={doSignOut}>
+        <Ionicons name="log-out-outline" size={20} color="#fff" />
+        <Text style={styles.logoutText}>Se déconnecter</Text>
       </TouchableOpacity>
     </View>
   );
@@ -123,5 +141,28 @@ titre: {
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center'
-  }
+  },
+  footerText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666'
+  },
+    texteBouton: { color: '#fff', fontWeight: '900', fontSize: 17 },
+
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    backgroundColor: '#ff4d4d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+
 });

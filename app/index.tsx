@@ -1,19 +1,49 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  Dimensions,
+  Alert, Dimensions,
   Image,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const BG = '#E6F0FF';
+ const router = useRouter();
+
+  const handleLogin = async () => {
+    
+
+    try {
+        
+
+      // Rediriger vers la page de connexion
+      router.replace('/login');
+    } catch (error) {
+      console.error(error);
+      
+      Alert.alert('Erreur', 'Impossible de se connecter. Veuillez réessayer.');
+      
+    }
+
+  };
+
+  const handleRegister = async () => {
+    try {
+      // Rediriger vers la page d'inscription
+      router.replace('/register');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erreur', 'Impossible de s\'inscrire. Veuillez réessayer.');
+    }};
+
+
 
 export default function Welcome() {
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -32,17 +62,12 @@ export default function Welcome() {
 
         {/* Actions principales */}
         <View style={styles.actions}>
-          <Link href="/register" asChild>
-            <Pressable style={styles.boutonCreer}>
-              <Text style={styles.texteBoutonCreer}>Créer un compte</Text>
-            </Pressable>
-          </Link>
-
-          <Link href="/login" asChild>
-            <Pressable style={styles.boutonConnecter}>
-              <Text style={styles.texteBoutonConnecter}>Se connecter</Text>
-            </Pressable>
-          </Link>
+          <Pressable style={styles.boutonCreer} onPress={handleRegister}>
+            <Text style={styles.texteBoutonCreer}>Créer un compte</Text>
+          </Pressable>
+          <Pressable style={styles.boutonConnecter} onPress={handleLogin}>
+            <Text style={styles.texteBoutonConnecter}>Se connecter</Text>
+          </Pressable>
         </View>
 
         {/* Séparateur */}

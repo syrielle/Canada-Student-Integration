@@ -19,6 +19,7 @@ type EtudiantEnrichi = Jumelage & {
 export default function ListeEtudiantsJumeles() {
   const [etudiants, setEtudiants] = useState<EtudiantEnrichi[]>([]);
   const router = useRouter();
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
