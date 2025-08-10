@@ -1,7 +1,8 @@
 // app/etudiant/(tabsEtudiant)/profil.jsx  (adapte le chemin si besoin)
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
-import { onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -14,7 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { auth, db } from '../../../src/services/firebaseConfig';
+import { db } from '../../../src/services/firebaseConfig';
 
 const BG = '#EAF3FF';
 
@@ -29,6 +30,9 @@ export default function ProfilEtudiant() {
   const [surPlace, setSurPlace] = useState('non');
   const [chargement, setChargement] = useState(true);
   const router = useRouter();
+  const auth = getAuth();
+  const [loading, setLoading] = useState(false);
+
 
   // Récupération du profil (inchangée)
   useEffect(() => {
@@ -55,7 +59,26 @@ export default function ProfilEtudiant() {
 
     return () => unsubscribe();
   }, []);
-
+  const doSignOut = async () => {
+    try {
+      setLoading(true);
+      await signOut(auth);
+      router.replace('/');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion', error);
+      setLoading(false);
+    }
+  };
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vraiment vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Se déconnecter', style: 'destructive', onPress: doSignOut },
+      ]
+    );
+  };
   // Sauvegarde (inchangée)
   const handleSauvegarde = async () => {
     if (!utilisateur) return;
@@ -169,6 +192,16 @@ export default function ProfilEtudiant() {
           <Text style={styles.texteBouton}>Enregistrer</Text>
         </TouchableOpacity>
       </View>
+
+        <View style={styles.container}>
+      <Text style={styles.title}>Mon Profil</Text>
+      
+      {/* Bouton Déconnexion */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={20} color="#fff" />
+        <Text style={styles.logoutText}>Se déconnecter</Text>
+      </TouchableOpacity>
+    </View>
     </ScrollView>
   );
 }
@@ -267,4 +300,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   texteBouton: { color: '#fff', fontWeight: '900', fontSize: 17 },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ff4d4d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
 });
