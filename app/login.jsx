@@ -128,10 +128,12 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
+
+    scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20
+    padding: 20,
+    backgroundColor: '#E6F0FF', // fond doux
   },
   container: {
     backgroundColor: '#fff',
@@ -143,7 +145,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    alignSelf: 'center'
+    alignSelf: 'center',
+    marginBottom: 25,
+    textAlign: 'center',
+    color: '#377DFF',
   },
   input: {
     borderWidth: 1,

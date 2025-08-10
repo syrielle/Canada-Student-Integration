@@ -167,69 +167,86 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20
+    padding: 20,
+    backgroundColor: '#E6F0FF', // fond doux
   },
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#ffffffff',
+    borderRadius: 12,
     padding: 20,
-    elevation: 5
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 5,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20,
-    alignSelf: 'center'
+    marginBottom: 25,
+    textAlign: 'center',
+    color: '#377DFF',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#aaa',
-    padding: 10,
+    borderColor: '#ddd',
+    padding: 12,
     marginBottom: 15,
-    borderRadius: 5
+    borderRadius: 8,
+    backgroundColor: '#fafafa',
+    fontSize: 16,
   },
   label: {
     fontSize: 16,
-    marginBottom: 8
+    marginBottom: 10,
+    fontWeight: '600',
+    color: '#333',
   },
   roleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20
+    marginBottom: 25,
   },
   roleOption: {
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 5
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
   },
   selected: {
-    backgroundColor: '#cce5ff'
+    backgroundColor: '#007bff20',
+    borderColor: '#007bff',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 5,
+    borderColor: '#ddd',
+    borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 15
+    marginBottom: 15,
+    backgroundColor: '#fafafa',
   },
   icon: {
-    marginLeft: 'auto'
+    marginLeft: 'auto',
   },
   passwordInput: {
     flex: 1,
-    paddingVertical: 10
+    paddingVertical: 12,
+    fontSize: 16,
   },
   button: {
-    backgroundColor: '#007bff',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center'
+    backgroundColor: '#377DFF',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
     color: '#fff',
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
