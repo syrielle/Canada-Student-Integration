@@ -1,6 +1,7 @@
 // app/etudiant/chatEtudiant.jsx
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   addDoc,
   collection,
@@ -9,8 +10,9 @@ import {
   query,
   serverTimestamp,
 } from 'firebase/firestore';
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { BackHandler, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../../src/services/firebaseConfig';
 
 const BG = '#EAF3FF';
@@ -18,10 +20,17 @@ const BLUE = '#CFEFFF';   // bulles envoyées
 const GREEN = '#E6F8EA';  // bulles reçues
 
 export default function ChatEtudiant() {
+  const router = useRouter();
   const { demandeId, nom = 'Discussion' } = useLocalSearchParams();
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState('');
   const listRef = useRef(null);
+ 
+
+   const goBackToList = React.useCallback(() => {
+    // On renvoie *toujours* vers la liste des discussions de l'étudiant
+    router.replace('/etudiant/chat');
+  }, [router]);
 
   // écoute temps réel (inchangé)
   useEffect(() => {
@@ -38,6 +47,15 @@ export default function ChatEtudiant() {
     });
     return unsub;
   }, [demandeId]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        goBackToList();
+        return true; // on “consomme” l’événement
+      });
+      return () => sub.remove();
+    }, [goBackToList])
+  );
 
   const send = async () => {
     const me = auth.currentUser?.uid;
@@ -69,7 +87,19 @@ export default function ChatEtudiant() {
   return (
     <View style={styles.container}>
       <Stack.Screen
-        options={{ title: String(nom), headerTitleAlign: 'center' }}
+        options={{ headerShown: true,                // on affiche l’entête pour ce screen
+          title: String(nom),               // titre propre
+          headerTitleAlign: 'center',
+          gestureEnabled: false,            // désactive le swipe-back iOS
+          headerLeft: () => (               // bouton retour personnalisé
+            <TouchableOpacity
+              onPress={goBackToList}
+              style={{ paddingHorizontal: 8, paddingVertical: 4 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} />
+            </TouchableOpacity>
+          ), }}
       />
 
       <FlatList

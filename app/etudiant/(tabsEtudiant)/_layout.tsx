@@ -1,13 +1,13 @@
-// app/(etudiant)/_layout.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+
 
 export default function EtudiantTabsLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#007bff',
-        headerShown: false, // Masque complètement l'en-tête
+        headerShown: false,
       }}
     >
       <Tabs.Screen
