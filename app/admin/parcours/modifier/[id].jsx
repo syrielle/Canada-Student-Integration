@@ -157,7 +157,7 @@ export default function ModifierEtape() {
 
       {/* Infos additionnelles */}
       <View style={styles.row}>
-        <View style={{ flex: 1 }}>
+        {/* <View style={{ flex: 1 }}>
           <Text style={styles.labelSmall}>Numéro d’étape (affichage)</Text>
           <TextInput
             value={numeroEtape === null ? '' : String(numeroEtape)}
@@ -169,7 +169,7 @@ export default function ModifierEtape() {
             keyboardType="numeric"
             style={styles.input}
           />
-        </View>
+        </View> */}
 
         <View style={[styles.switchWrap, { marginLeft: 12 }]}>
           <Text style={styles.labelSmall}>Étape visible</Text>
