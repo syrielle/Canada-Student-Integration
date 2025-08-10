@@ -1,24 +1,36 @@
+// app/etudiant/(tabsEtudiant)/profil.jsx  (adapte le chemin si besoin)
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { auth, db } from '../../../src/services/firebaseConfig';
+
+const BG = '#EAF3FF';
 
 export default function ProfilEtudiant() {
   const [utilisateur, setUtilisateur] = useState(null);
+  const [email, setEmail] = useState('');
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [telephone, setTelephone] = useState('');
   const [dateNaissance, setDateNaissance] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [surPlace, setSurPlace] = useState('non');
-  const [email, setEmail] = useState('');
   const [chargement, setChargement] = useState(true);
   const router = useRouter();
 
+  // Récupération du profil (inchangée)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -28,14 +40,14 @@ export default function ProfilEtudiant() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUtilisateur(user);
-          setEmail(user.email);  // e-mail affiché mais non modifiable
+          setEmail(user.email); // e-mail affiché mais non modifiable
           setNom(data.nom || '');
           setPrenom(data.prenom || '');
           setTelephone(data.telephone || '');
           setDateNaissance(data.dateNaissance ? new Date(data.dateNaissance) : new Date());
           setSurPlace(data.surPlace || 'non');
         } else {
-          Alert.alert("Erreur", "Profil introuvable.");
+          Alert.alert('Erreur', 'Profil introuvable.');
         }
       }
       setChargement(false);
@@ -44,6 +56,7 @@ export default function ProfilEtudiant() {
     return () => unsubscribe();
   }, []);
 
+  // Sauvegarde (inchangée)
   const handleSauvegarde = async () => {
     if (!utilisateur) return;
 
@@ -53,113 +66,205 @@ export default function ProfilEtudiant() {
         prenom,
         telephone,
         dateNaissance: dateNaissance.toISOString(),
-        surPlace
+        surPlace,
       });
 
-      Alert.alert("Succès", "Profil mis à jour avec succès !", [
-  {
-    text: "OK",
-    onPress: () => router.replace('/etudiant'), // ou '/etudiant/(tabs)' ou '/etudiant/monParcours' selon ta route
-  }
-]);
+      Alert.alert('Succès', 'Profil mis à jour avec succès !', [
+        { text: 'OK', onPress: () => router.replace('/etudiant') },
+      ]);
     } catch (error) {
       console.error(error);
-      Alert.alert("Erreur", "Échec de la mise à jour.");
+      Alert.alert('Erreur', 'Échec de la mise à jour.');
     }
   };
+
+  // Progression dynamique (0–100)
+  const progress = useMemo(() => {
+    let done = 0;
+    if (nom?.trim()) done++;
+    if (prenom?.trim()) done++;
+    if (telephone?.trim()) done++;
+    if (dateNaissance instanceof Date && !isNaN(dateNaissance.getTime())) done++;
+    if (surPlace === 'oui' || surPlace === 'non') done++;
+    return Math.round((done / 5) * 100);
+  }, [nom, prenom, telephone, dateNaissance, surPlace]);
 
   if (chargement) return <Text style={{ padding: 20 }}>Chargement...</Text>;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titre}>Modifier mon profil</Text>
-
-      <Text style={styles.label}>Adresse e-mail (non modifiable)</Text>
-      <Text style={[styles.input, { backgroundColor: '#f0f0f0' }]}>{email}</Text>
-
-      <Text style={styles.label}>Nom</Text>
-      <TextInput style={styles.input} value={nom} onChangeText={setNom} />
-
-      <Text style={styles.label}>Prénom</Text>
-      <TextInput style={styles.input} value={prenom} onChangeText={setPrenom} />
-
-      <Text style={styles.label}>Numéro de téléphone</Text>
-      <TextInput
-        style={styles.input}
-        value={telephone}
-        onChangeText={setTelephone}
-        keyboardType="phone-pad"
-      />
-
-      <Text style={styles.label}>Date de naissance</Text>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-        <Text>{dateNaissance.toLocaleDateString()}</Text>
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          value={dateNaissance}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setDateNaissance(selectedDate);
-          }}
-        />
-      )}
-
-      <Text style={styles.label}>Êtes-vous déjà au Québec ?</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={surPlace}
-          onValueChange={(itemValue) => setSurPlace(itemValue)}
-        >
-          <Picker.Item label="Oui" value="oui" />
-          <Picker.Item label="Non" value="non" />
-        </Picker>
+    <ScrollView style={{ backgroundColor: BG }} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Carte progression */}
+      <View style={styles.progressCard}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressTitle}>Complétion du profil</Text>
+          <Text style={styles.progressValue}>{progress}%</Text>
+        </View>
+        <View style={styles.progressTrack} accessibilityRole="progressbar" accessibilityValue={{ now: progress, min: 0, max: 100 }}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
+        <Text style={styles.progressHint}>
+          {Math.round((progress / 100) * 5)}/5 champs essentiels remplis
+        </Text>
       </View>
 
-      <TouchableOpacity style={styles.bouton} onPress={handleSauvegarde}>
-        <Text style={styles.texteBouton}>Enregistrer</Text>
-      </TouchableOpacity>
+      {/* Formulaire (un seul bloc) */}
+      <View style={styles.card}>
+        <Text style={styles.label}>Adresse e-mail (non modifiable)</Text>
+        <Text style={[styles.input, styles.inputDisabled]}>{email}</Text>
+
+        <Text style={styles.label}>Nom</Text>
+        <TextInput style={styles.input} value={nom} onChangeText={setNom} placeholder="Votre nom" />
+
+        <Text style={styles.label}>Prénom</Text>
+        <TextInput style={styles.input} value={prenom} onChangeText={setPrenom} placeholder="Votre prénom" />
+
+        <Text style={styles.label}>Numéro de téléphone</Text>
+        <TextInput
+          style={styles.input}
+          value={telephone}
+          onChangeText={setTelephone}
+          keyboardType="phone-pad"
+          placeholder="Ex : 514-123-4567"
+        />
+
+        <Text style={styles.label}>Date de naissance</Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+          <Text>{dateNaissance.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={dateNaissance}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setDateNaissance(selectedDate);
+            }}
+          />
+        )}
+
+        <Text style={styles.label}>Êtes-vous déjà au Québec ?</Text>
+        {/* Toggle segmenté compact Oui/Non */}
+        <View style={styles.segment}>
+          <TouchableOpacity
+            onPress={() => setSurPlace('oui')}
+            style={[styles.segmentBtn, surPlace === 'oui' && styles.segmentBtnActive]}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.segmentTxt, surPlace === 'oui' && styles.segmentTxtActive]}>Oui</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSurPlace('non')}
+            style={[styles.segmentBtn, surPlace === 'non' && styles.segmentBtnActive]}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.segmentTxt, surPlace === 'non' && styles.segmentTxtActive]}>Non</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* CTA */}
+      <View style={styles.ctaWrap}>
+        <TouchableOpacity style={styles.bouton} onPress={handleSauvegarde} activeOpacity={0.9}>
+          <Text style={styles.texteBouton}>Enregistrer</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  container: { padding: 16, gap: 16, paddingBottom: 40 },
+
+  // Progress
+  progressCard: {
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    gap: 10,
   },
-  titre: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center'
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressTitle: { fontWeight: '800', color: '#111827' },
+  progressValue: { fontWeight: '800', color: '#2563EB' },
+  progressTrack: {
+    height: 12,
+    backgroundColor: '#E7ECFF',
+    borderRadius: 999,
+    overflow: 'hidden',
   },
-  label: {
-    fontWeight: '600',
-    marginBottom: 5
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#2563EB',
+    borderRadius: 999,
   },
+  progressHint: { color: '#6B7280', fontSize: 12 },
+
+  // Card + inputs
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  label: { fontWeight: '800', marginBottom: 8, color: '#111827' },
   input: {
+    backgroundColor: '#F8FAFF',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
+    borderColor: '#E6EAF5',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    marginBottom: 14,
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginBottom: 15
+  inputDisabled: { backgroundColor: '#F2F4F7', color: '#6B7280' },
+
+  // Segment toggle
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 16,
+    padding: 6,
+    gap: 8,
+    marginBottom: 6,
   },
+  segmentBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  segmentBtnActive: {
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  segmentTxt: { color: '#6B7280', fontWeight: '800' },
+  segmentTxtActive: { color: '#fff' },
+
+  // CTA
+  ctaWrap: { marginTop: 8 },
   bouton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center'
+    backgroundColor: '#2563EB',
+    paddingVertical: 16,
+    borderRadius: 18,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
   },
-  texteBouton: {
-    color: '#fff',
-    fontWeight: 'bold'
-  }
+  texteBouton: { color: '#fff', fontWeight: '900', fontSize: 17 },
 });
