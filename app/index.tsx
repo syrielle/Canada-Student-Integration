@@ -12,38 +12,28 @@ import {
 
 const { width } = Dimensions.get('window');
 const BG = '#E6F0FF';
- const router = useRouter();
+
+export default function Welcome() {
+  const router = useRouter();
 
   const handleLogin = async () => {
-    
-
     try {
-        
-
-      // Rediriger vers la page de connexion
       router.replace('/login');
     } catch (error) {
       console.error(error);
-      
       Alert.alert('Erreur', 'Impossible de se connecter. Veuillez réessayer.');
-      
     }
-
   };
 
   const handleRegister = async () => {
     try {
-      // Rediriger vers la page d'inscription
       router.replace('/register');
     } catch (error) {
       console.error(error);
-      Alert.alert('Erreur', 'Impossible de s\'inscrire. Veuillez réessayer.');
-    }};
+      Alert.alert('Erreur', "Impossible de s'inscrire. Veuillez réessayer.");
+    }
+  };
 
-
-
-export default function Welcome() {
-  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>

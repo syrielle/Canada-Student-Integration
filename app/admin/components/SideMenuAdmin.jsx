@@ -1,42 +1,59 @@
 // app/admin/components/SideMenuAdmin.jsx
-import { FontAwesome, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { signOut } from 'firebase/auth';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { auth } from '../../../src/services/firebaseConfig';
 
 export default function SideMenuAdmin() {
   const router = useRouter();
 
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.replace('/login');
+  };
+
+  const confirmSignOut = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vraiment vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Déconnexion', style: 'destructive', onPress: handleSignOut },
+      ]
+    );
+  };
+
   return (
     <View style={styles.menu}>
-      <TouchableOpacity style={styles.item} onPress={() => router.push('/admin/utilisateurs')}>
-        <FontAwesome name="users" size={20} color="#007bff" />
-        <Text style={styles.text}>Utilisateurs</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.item, styles.selected]} onPress={() => router.push('/admin/validationJumelages')}>
-        <FontAwesome name="handshake-o" size={20} color="#fff" />
-        <Text style={[styles.text, styles.selectedText]}>Jumelages</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.item]} onPress={() => router.push('/admin/validationMentors')}>
-        <FontAwesome5 name="user-check" size={20} color="#007bff" />
-        <Text style={styles.text}>Valider Mentors</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.item]} onPress={() => router.push('/admin/parcours')}>
-        <FontAwesome5 name="road" size={20} color="#007bff" />
-        <Text style={styles.text}>Parcours</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.item}>
-        <MaterialIcons name="bar-chart" size={20} color="#007bff" />
-        <Text style={styles.text}>Statistiques</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.item}>
-        <FontAwesome name="bell" size={20} color="#007bff" />
-        <Text style={styles.text}>Notifications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.item}>
-        <FontAwesome name="cog" size={20} color="#007bff" />
-        <Text style={styles.text}>Paramètres</Text>
-      </TouchableOpacity>
+      <View style={styles.section}>
+        <TouchableOpacity style={[styles.item,styles.selected]} onPress={() => router.push('/admin/utilisateurs')}>
+          <FontAwesome name="users" size={20} color="#fff" />
+          <Text style={[styles.text, styles.selectedText]}>Utilisateurs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.item,]} onPress={() => router.push('/admin/validationJumelages')}>
+          <FontAwesome name="handshake-o" size={20} color="#007bff" />
+          <Text style={styles.text}>Jumelages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.item} onPress={() => router.push('/admin/validationMentors')}>
+          <FontAwesome5 name="user-check" size={20} color="#007bff" />
+          <Text style={styles.text}>Valider Mentors</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.item} onPress={() => router.push('/admin/parcours')}>
+          <FontAwesome5 name="road" size={20} color="#007bff" />
+          <Text style={styles.text}>Parcours</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.item}>
+          <FontAwesome name="cog" size={20} color="#007bff" />
+          <Text style={styles.text}>Paramètres</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.logoutSection}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={confirmSignOut}>
+          <FontAwesome name="sign-out" size={20} color="#d32f2f" />
+          <Text style={styles.logoutText}>Déconnexion</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -51,6 +68,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    justifyContent: 'space-between',
+  },
+  section: {
+    // regroupe les boutons principaux
   },
   item: {
     flexDirection: 'row',
@@ -69,5 +90,22 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     color: '#fff',
+  },
+  logoutSection: {
+    marginTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 16,
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  logoutText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#d32f2f',
+    fontWeight: 'bold',
   },
 });

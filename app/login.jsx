@@ -78,10 +78,10 @@ export default function Login() {
 
   return (
   <View style={{ flex: 1 }}>
-    <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 40, left: 20, zIndex: 10 }}>
+    <TouchableOpacity
+      onPress={() => router.replace('/')}style={{ position: 'absolute', top: 40, left: 20, zIndex: 10 }}>
       <Ionicons name="arrow-back" size={24} color="black" />
     </TouchableOpacity>
-
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
