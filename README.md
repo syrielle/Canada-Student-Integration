@@ -219,7 +219,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 Pour toute question ou problème :
 - Ouvrir une [issue](https://github.com/votre-username/canada-student-integration/issues)
-- Contacter l'équipe : [email@example.com]
+- Contacter l'équipe : [maks0005@uqar.ca]
 
 ## 🗺️ Roadmap
 
